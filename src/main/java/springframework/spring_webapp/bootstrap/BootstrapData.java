@@ -4,8 +4,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import springframework.spring_webapp.domain.Author;
 import springframework.spring_webapp.domain.Book;
+import springframework.spring_webapp.domain.Publisher;
 import springframework.spring_webapp.repositories.AuthorRepository;
 import springframework.spring_webapp.repositories.BookRepository;
+import springframework.spring_webapp.repositories.PublisherRepository;
 
 import java.util.Set;
 
@@ -14,10 +16,12 @@ public class BootstrapData implements CommandLineRunner {
 
     private final AuthorRepository authorRepository;
     private final BookRepository bookRepository;
+    private final PublisherRepository publisherRepository;
 
-    public BootstrapData(AuthorRepository authorRepository, BookRepository bookRepository) {
+    public BootstrapData(AuthorRepository authorRepository, BookRepository bookRepository, PublisherRepository publisherRepository) {
         this.authorRepository = authorRepository;
         this.bookRepository = bookRepository;
+        this.publisherRepository = publisherRepository;
     }
 
     @Override
@@ -46,13 +50,28 @@ public class BootstrapData implements CommandLineRunner {
         // Create association between authors and books
         bradburySaved.getBooks().add(fahrenheit451Saved);
         evansSaved.getBooks().add(dddSaved);
+        dddSaved.getAuthors().add(evansSaved);
+        fahrenheit451Saved.getAuthors().add(bradburySaved);
+
+        Publisher publisher = new Publisher();
+        publisher.setPublisherName("Machaon");
+        publisher.setAddress("Tverskaya Street 26");
+        Publisher savedPublisher = publisherRepository.save(publisher);
+
+        dddSaved.setPublisher(savedPublisher);
+        fahrenheit451Saved.setPublisher(savedPublisher);
 
         // Persist the author-book associations
         authorRepository.save(bradburySaved);
         authorRepository.save(evansSaved);
 
+        // Persist the book-publisher associations
+        bookRepository.save(fahrenheit451Saved);
+        bookRepository.save(dddSaved);
+
         System.out.println("In BootstrapData");
         System.out.println("Author count: " + authorRepository.count());
         System.out.println("Book count: " + bookRepository.count());
+        System.out.println("Publisher count: " + publisherRepository.count());
     }
 }
